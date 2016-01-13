@@ -367,6 +367,35 @@ func (r *registry) Push(job, instance, pushURL, method string) error {
 	return nil
 }
 
+func (r *registry) PushOpt(headers map[string]string, pushURL, method string) error {
+	buf := r.getBuf()
+	defer r.giveBuf(buf)
+	if err := r.writePB(expfmt.NewEncoder(buf, expfmt.FmtProtoDelim)); err != nil {
+		if r.panicOnCollectError {
+			panic(err)
+		}
+		return err
+	}
+	req, err := http.NewRequest(method, pushURL, buf)
+	if err != nil {
+		return err
+	}
+	req.Header.Set(contentTypeHeader, DelimitedTelemetryContentType)
+
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 202 {
+		return fmt.Errorf("unexpected status code %d while pushing to %s", resp.StatusCode, pushURL)
+	}
+	return nil
+}
+
 func (r *registry) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	contentType := expfmt.Negotiate(req.Header)
 	buf := r.getBuf()
