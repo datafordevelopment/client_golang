@@ -33,6 +33,13 @@ func Push(job, instance, url string) error {
 	return defRegistry.Push(job, instance, url, "PUT")
 }
 
+// PushOpt works like Push, but it adds an optional set of headers and
+// the ability to pass in a non-Pushgateway compliant url.(It uses HTTP method
+// 'POST' to push to the Pushgateway.)
+func PushOpt(headers map[string]string, url string) error {
+	return defRegistry.PushOpt(headers, url, "POST")
+}
+
 // PushAdd works like Push, but only previously pushed metrics with the same
 // name (and the same job and instance) will be replaced. (It uses HTTP method
 // 'POST' to push to the Pushgateway.)
