@@ -19,6 +19,10 @@
 
 package prometheus
 
+import (
+	"net/http"
+)
+
 // Push triggers a metric collection by the default registry and pushes all
 // collected metrics to the Pushgateway specified by url. See the Pushgateway
 // documentation for detailed implications of the job and instance
@@ -36,8 +40,8 @@ func Push(job, instance, url string) error {
 // PushOpt works like Push, but it adds an optional set of headers and
 // the ability to pass in a non-Pushgateway compliant url.(It uses HTTP method
 // 'POST' to push to the Pushgateway.)
-func PushOpt(headers map[string]string, url string) error {
-	return defRegistry.PushOpt(headers, url, "POST")
+func PushWithHeaders(headers map[string]string, url string) (*http.Header, error) {
+	return defRegistry.PushWithHeaders(headers, url, "POST")
 }
 
 // PushAdd works like Push, but only previously pushed metrics with the same
